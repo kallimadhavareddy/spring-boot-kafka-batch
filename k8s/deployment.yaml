@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-boot-kafka-batch
+  namespace: batch-ns
+  labels:
+    app: spring-boot-kafka-batch
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: spring-boot-kafka-batch
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxSurge: 2, maxUnavailable: 1 }
+  template:
+    metadata:
+      labels:
+        app: spring-boot-kafka-batch
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8080"
+    spec:
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: app
+          image: registry.example.com/spring-boot-kafka-batch:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom: { secretKeyRef: { name: batch-secrets, key: db-url } }
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom: { secretKeyRef: { name: batch-secrets, key: db-username } }
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom: { secretKeyRef: { name: batch-secrets, key: db-password } }
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom: { secretKeyRef: { name: batch-secrets, key: kafka-brokers } }
+            - name: POD_NAME
+              valueFrom: { fieldRef: { fieldPath: metadata.name } }
+            - name: JAVA_OPTS
+              value: >-
+                -Xms2g -Xmx4g -XX:+UseG1GC -XX:MaxGCPauseMillis=200
+                -XX:+UseContainerSupport -XX:MaxRAMPercentage=80.0
+                -Djava.security.egd=file:/dev/./urandom
+          resources:
+            requests: { memory: "3Gi", cpu: "1000m" }
+            limits:  { memory: "5Gi", cpu: "4000m" }
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: 8080 }
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: 8080 }
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+          lifecycle:
+            preStop:
+              exec: { command: ["/bin/sh", "-c", "sleep 20"] }
+          volumeMounts:
+            - name: csv-storage
+              mountPath: /data/csv
+              readOnly: true
+      volumes:
+        - name: csv-storage
+          persistentVolumeClaim: { claimName: csv-shared-pvc }
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels: { app: spring-boot-kafka-batch }
+                topologyKey: kubernetes.io/hostname
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: spring-boot-kafka-batch-hpa
+  namespace: batch-ns
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: spring-boot-kafka-batch
+  minReplicas: 6
+  maxReplicas: 12
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 70 }
+    - type: Resource
+      resource:
+        name: memory
+        target: { type: Utilization, averageUtilization: 75 }
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies: [{ type: Pods, value: 2, periodSeconds: 60 }]
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies: [{ type: Pods, value: 1, periodSeconds: 120 }]
