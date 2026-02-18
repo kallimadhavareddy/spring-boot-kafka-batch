@@ -21,12 +21,16 @@ public class Controller {
 
     @GetMapping("/send")
     ResponseEntity<String> createMessage() {
+
+        System.out.println("Calling message send");
         KafkaBatchMessage kafkaBatchMessage = new KafkaBatchMessage();
         kafkaBatchMessage.setFileId("file-20260218-001");
         kafkaBatchMessage.setFilePath("/home/kalli/sample.csv");
         kafkaBatchMessage.setRecordCount(5);
         kafkaBatchMessage.setDelimiter(",");
         kafkaBatchMessage.setSourceSystem("TEST-System");
+        System.out.println("Message send"+kafkaBatchMessage);
+
         kafkaTemplate.send("test-topic",kafkaBatchMessage);
         return ResponseEntity.ok("sent");
     }
