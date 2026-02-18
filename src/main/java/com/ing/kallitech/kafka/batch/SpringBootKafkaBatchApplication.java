@@ -5,8 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 
-// FIX: Disable Kafka auto-configuration to allow startup without Kafka broker
-@SpringBootApplication(exclude = KafkaAutoConfiguration.class)
+// FIX: Added @EnableKafka and @ConfigurationPropertiesScan
+@SpringBootApplication
 @ConfigurationPropertiesScan
 public class SpringBootKafkaBatchApplication {
 
