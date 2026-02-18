@@ -71,59 +71,59 @@ public class KafkaMessageListener {
             MDC.put("fileId", message.getFileId());
 
             try {
-            log.info("Received trigger: fileId={} filePath={} records={} partition={} offset={}",
-                message.getFileId(), message.getFilePath(),
-                message.getRecordCount(), partition, offset);
+                log.info("Received trigger: fileId={} filePath={} records={} partition={} offset={}",
+                        message.getFileId(), message.getFilePath(),
+                        message.getRecordCount(), partition, offset);
 
-            // ── Idempotency check ─────────────────────────────────────────────
-            if (idempotencyService.isAlreadyProcessed(message.getFileId())) {
-                log.warn("Duplicate skipped (already COMPLETED): fileId={}", message.getFileId());
-                Counter.builder("batch.trigger.duplicate").register(meterRegistry).increment();
-                acknowledgment.acknowledge();
-                return;
-            }
+                // ── Idempotency check ─────────────────────────────────────────────
+                if (idempotencyService.isAlreadyProcessed(message.getFileId())) {
+                    log.warn("Duplicate skipped (already COMPLETED): fileId={}", message.getFileId());
+                    Counter.builder("batch.trigger.duplicate").register(meterRegistry).increment();
+                    acknowledgment.acknowledge();
+                    return;
+                }
 
-            // ── Backpressure ──────────────────────────────────────────────────
-            if (!concurrencyGate.tryAcquire()) {
-                log.warn("Pod at max concurrency — not acking (Kafka will redeliver): fileId={}",
-                    message.getFileId());
-                Counter.builder("batch.trigger.backpressure").register(meterRegistry).increment();
-                // Do NOT ack — Kafka will redeliver to this or another pod
-                throw new RuntimeException("Pod at max concurrency for fileId: " + message.getFileId());
-            }
+                // ── Backpressure ──────────────────────────────────────────────────
+                if (!concurrencyGate.tryAcquire()) {
+                    log.warn("Pod at max concurrency — not acking (Kafka will redeliver): fileId={}",
+                            message.getFileId());
+                    Counter.builder("batch.trigger.backpressure").register(meterRegistry).increment();
+                    // Do NOT ack — Kafka will redeliver to this or another pod
+                    throw new RuntimeException("Pod at max concurrency for fileId: " + message.getFileId());
+                }
 
-            try {
-                idempotencyService.markProcessingStarted(message.getFileId());
+                try {
+                    idempotencyService.markProcessingStarted(message.getFileId());
 
-                JobParameters params = new JobParametersBuilder()
-                    .addString("fileId",       message.getFileId())
-                    .addString("filePath",     message.getFilePath())
-                    .addLong("totalRecords",   message.getRecordCount())
-                    .addString("delimiter",    message.getDelimiter(), false)
-                    .addLong("launchTs",       System.currentTimeMillis())
-                    .toJobParameters();
+                    JobParameters params = new JobParametersBuilder()
+                            .addString("fileId", message.getFileId())
+                            .addString("filePath", message.getFilePath())
+                            .addLong("totalRecords", message.getRecordCount())
+                            .addString("delimiter", message.getDelimiter(), false)
+                            .addLong("launchTs", System.currentTimeMillis())
+                            .toJobParameters();
 
-                var execution = csvImportJob.map(job -> {
-                    try {
-                        return jobLauncher.run(job, params);
-                    } catch (Exception e) {
-                        log.error("Failed to launch job for file: " + message.getFileId(), e);
-                        throw new RuntimeException(e);
-                    }
-                }).orElseThrow(() -> new RuntimeException("No job available"));
-                log.info("Job launched: jobId={} status={}", execution.getId(), execution.getStatus());
+                    var execution = csvImportJob.map(job -> {
+                        try {
+                            return jobLauncher.run(job, params);
+                        } catch (Exception e) {
+                            log.error("Failed to launch job for file: " + message.getFileId(), e);
+                            throw new RuntimeException(e);
+                        }
+                    }).orElseThrow(() -> new RuntimeException("No job available"));
+                    log.info("Job launched: jobId={} status={}", execution.getId(), execution.getStatus());
 
-                Counter.builder("batch.trigger.launched").register(meterRegistry).increment();
-                acknowledgment.acknowledge();   // ACK only after successful launch
+                    Counter.builder("batch.trigger.launched").register(meterRegistry).increment();
+                    acknowledgment.acknowledge();   // ACK only after successful launch
 
-            } catch (Exception e) {
-                log.error("Job launch failed for fileId={}: {}", message.getFileId(), e.getMessage(), e);
-                idempotencyService.markFailed(message.getFileId(), e.getMessage());
-                concurrencyGate.release();      // Release slot on failure
-                Counter.builder("batch.trigger.launch_failed").register(meterRegistry).increment();
-                throw new RuntimeException("Job launch failed", e); // → Kafka retry → DLQ
-            }
-            // Note: concurrencyGate released by JobCompletionListener.afterJob()
+                } catch (Exception e) {
+                    log.error("Job launch failed for fileId={}: {}", message.getFileId(), e.getMessage(), e);
+                    idempotencyService.markFailed(message.getFileId(), e.getMessage());
+                    concurrencyGate.release();      // Release slot on failure
+                    Counter.builder("batch.trigger.launch_failed").register(meterRegistry).increment();
+                    throw new RuntimeException("Job launch failed", e); // → Kafka retry → DLQ
+                }
+                // Note: concurrencyGate released by JobCompletionListener.afterJob()
 
             } catch (Exception e) {
                 log.error("Failed to process message: {}", e.getMessage(), e);
@@ -131,7 +131,11 @@ public class KafkaMessageListener {
             } finally {
                 MDC.clear();
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
+
 
     public void releaseConcurrencySlot() {
         concurrencyGate.release();
