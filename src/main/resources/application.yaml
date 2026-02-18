@@ -1,5 +1,11 @@
 # ── Spring Batch ──────────────────────────────────────────────────────────────
 spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration
+  
   batch:
     job:
       enabled: true
@@ -111,6 +117,8 @@ logging:
     org.springframework.batch: INFO
     org.apache.kafka: DEBUG
     org.springframework.kafka: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.boot.autoconfigure.web: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{fileId}] %-5level %logger{36} - %msg%n"
 
