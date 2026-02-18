@@ -133,8 +133,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, KafkaBatchMessage> cc(
-            ProducerFactory<String, KafkaBatchMessage> producerFactory) {
+    public KafkaTemplate<String, String> kafkaTemplate(
+            ProducerFactory<String, String> producerFactory) {
         return new KafkaTemplate<>(producerFactory);
     }
 }
