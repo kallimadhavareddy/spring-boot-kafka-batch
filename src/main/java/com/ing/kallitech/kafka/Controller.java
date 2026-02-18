@@ -24,7 +24,7 @@ public class Controller {
         KafkaBatchMessage kafkaBatchMessage = new KafkaBatchMessage();
         kafkaBatchMessage.setFileId("file-20260218-001");
         kafkaBatchMessage.setFilePath("/home/kalli/sample.csv");
-        kafkaBatchMessage.setRecordCount(2);
+        kafkaBatchMessage.setRecordCount(5);
         kafkaBatchMessage.setDelimiter(",");
         kafkaBatchMessage.setSourceSystem("TEST-System");
         kafkaTemplate.send("test-topic",kafkaBatchMessage);
