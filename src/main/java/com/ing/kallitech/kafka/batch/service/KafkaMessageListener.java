@@ -1,5 +1,6 @@
 package com.ing.kallitech.kafka.batch.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ing.kallitech.kafka.batch.idempotency.IdempotencyService;
 import com.ing.kallitech.kafka.batch.model.KafkaBatchMessage;
 import io.micrometer.core.instrument.Counter;
@@ -38,6 +39,7 @@ public class KafkaMessageListener {
     private final IdempotencyService idempotencyService;
     private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
     private final Semaphore concurrencyGate;
+    private final ObjectMapper objectMapper;
 
     public KafkaMessageListener(JobLauncher jobLauncher,
                                 Optional<Job> csvImportJob,
@@ -48,7 +50,9 @@ public class KafkaMessageListener {
         this.csvImportJob = csvImportJob;
         this.idempotencyService = idempotencyService;
         this.meterRegistry = meterRegistry;
-        int maxJobs = Integer.parseInt(env.getProperty("batch.job.max-concurrent-jobs", "2"));
+        this.objectMapper = new ObjectMapper();
+        
+        int maxJobs = env.getProperty("batch.job.max-concurrent-jobs", Integer.class, 2);
         this.concurrencyGate = new Semaphore(maxJobs);
     }
 
@@ -57,14 +61,16 @@ public class KafkaMessageListener {
         groupId = "${kafka.group-id}",
         containerFactory = "kafkaListenerContainerFactory"
     )
-    public void handleFileMessage(@Payload KafkaBatchMessage message,
+    public void handleFileMessage(@Payload String messageJson,
             Acknowledgment acknowledgment,
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) long offset) {
 
-        MDC.put("fileId", message.getFileId());
-
         try {
+            KafkaBatchMessage message = objectMapper.readValue(messageJson, KafkaBatchMessage.class);
+            MDC.put("fileId", message.getFileId());
+
+            try {
             log.info("Received trigger: fileId={} filePath={} records={} partition={} offset={}",
                 message.getFileId(), message.getFilePath(),
                 message.getRecordCount(), partition, offset);
@@ -119,9 +125,12 @@ public class KafkaMessageListener {
             }
             // Note: concurrencyGate released by JobCompletionListener.afterJob()
 
-        } finally {
-            MDC.clear();
-        }
+            } catch (Exception e) {
+                log.error("Failed to process message: {}", e.getMessage(), e);
+                acknowledgment.acknowledge(); // Acknowledge to avoid reprocessing
+            } finally {
+                MDC.clear();
+            }
     }
 
     public void releaseConcurrencySlot() {
