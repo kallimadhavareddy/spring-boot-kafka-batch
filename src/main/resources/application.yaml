@@ -115,10 +115,10 @@ logging:
   level:
     com.ing.kallitech: DEBUG
     org.springframework.batch: INFO
-    org.apache.kafka: DEBUG
-    org.springframework.kafka: DEBUG
-    org.springframework.web: DEBUG
-    org.springframework.boot.autoconfigure.web: DEBUG
+    org.apache.kafka: INFO
+    org.springframework.kafka: INFO
+    org.springframework.web: INFO
+    org.springframework.boot.autoconfigure.web: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{fileId}] %-5level %logger{36} - %msg%n"
 
