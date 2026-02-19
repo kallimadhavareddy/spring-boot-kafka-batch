@@ -22,6 +22,11 @@ spring:
     username: sa
     password: 
     
+  # Timezone Configuration
+  jackson:
+    time-zone: UTC
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+    
   # SQL Initialization
   sql:
     init:
