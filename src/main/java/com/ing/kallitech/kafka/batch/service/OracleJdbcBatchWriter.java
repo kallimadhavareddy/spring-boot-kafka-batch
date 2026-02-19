@@ -10,6 +10,7 @@ import org.springframework.batch.item.ItemWriter;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -59,10 +60,13 @@ public class OracleJdbcBatchWriter implements ItemWriter<RecordDTO> {
         """;
 
     @Override
+    @Transactional
     public void write(Chunk<? extends RecordDTO> chunk) {
         List<? extends RecordDTO> items = chunk.getItems();
         if (items.isEmpty()) return;
 
+        log.info("OracleJdbcBatchWriter.write() called with {} items", items.size());
+        
         Timer.Sample sample = Timer.start(meterRegistry);
 
         try {
