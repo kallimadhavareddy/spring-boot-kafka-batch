@@ -68,7 +68,7 @@ public class CsvPartitioner implements Partitioner {
             ctx.putString("delimiter", delimiter);
 
             result.put("partition-" + i, ctx);
-            log.debug("  partition-{}: lines {}-{}", i, startLine, endLine);
+            log.info("  partition-{}: lines {}-{} ({} items)", i, startLine, endLine, endLine - startLine + 1);
         }
 
         log.info("Created {} partitions", result.size());

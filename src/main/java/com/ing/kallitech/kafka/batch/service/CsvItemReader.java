@@ -58,8 +58,8 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
         delegate = new FlatFileItemReaderBuilder<RecordDTO>()
             .name("csvReader-" + partIdx)
             .resource(resource)
-            .linesToSkip((int) startLine - 1)
-            .maxItemCount((int) maxItems)
+            .linesToSkip((int) startLine - 1)  // Skip lines before this partition's start
+            .maxItemCount((int) maxItems)      // Read exactly this partition's items
             .saveState(false)  // Disable save state for partitioned readers
             .lineTokenizer(tokenizer)
             .fieldSetMapper(fieldMapper)
