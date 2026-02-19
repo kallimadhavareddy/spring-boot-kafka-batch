@@ -9,6 +9,7 @@ import org.springframework.batch.item.*;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
+import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Component;
@@ -48,9 +49,16 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
         var tokenizer = new DelimitedLineTokenizer(delimiter);
         tokenizer.setNames(FIELD_NAMES);
         tokenizer.setStrict(false); // Allow missing columns and different field counts
+        
+        log.info("Tokenizer configured with fields: {}", String.join(",", FIELD_NAMES));
 
         var fieldMapper = new BeanWrapperFieldSetMapper<RecordDTO>();
         fieldMapper.setTargetType(RecordDTO.class);
+
+        // Create a custom line mapper for better error handling
+        var lineMapper = new DefaultLineMapper<RecordDTO>();
+        lineMapper.setLineTokenizer(tokenizer);
+        lineMapper.setFieldSetMapper(fieldMapper);
 
         // Create a new resource for each partition to avoid stream conflicts
         var resource = new FileSystemResource(filePath);
@@ -61,8 +69,7 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
             .linesToSkip((int) startLine - 1)  // Skip header + all lines before this partition
             .maxItemCount((int) maxItems)      // Read exactly this partition's items
             .saveState(false)  // Disable save state for partitioned readers
-            .lineTokenizer(tokenizer)
-            .fieldSetMapper(fieldMapper)
+            .lineMapper(lineMapper)  // Use custom line mapper
             .build();
             
         log.info("Configured reader partition{}: skip={}, maxItems={}", 
@@ -81,8 +88,10 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
         
         RecordDTO record = delegate.read();
         if (record != null) {
-            log.debug("Read record: externalId={}, name={}, value={}", 
+            log.info("Successfully read record: externalId={}, name={}, value={}", 
                 record.getExternalId(), record.getName(), record.getValue());
+        } else {
+            log.info("No more records to read");
         }
         return record;
     }
