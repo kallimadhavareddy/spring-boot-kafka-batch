@@ -18,7 +18,7 @@ public class Record {
     @Column(name = "name", nullable = false)
     private String name;
     
-    @Column(name = "\"value\"")  // Quote to handle SQL reserved keyword
+    @Column(name = "value_rec")  // Quote to handle SQL reserved keyword
     private BigDecimal valueRec;
     
     @Column(name = "category")

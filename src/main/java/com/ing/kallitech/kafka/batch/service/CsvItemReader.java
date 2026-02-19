@@ -33,7 +33,7 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
     private static final Logger log = LoggerFactory.getLogger(CsvItemReader.class);
 
     private static final String[] FIELD_NAMES =
-        {"externalId", "name", "value", "category", "eventTs"}; // Skip 'email' field
+        {"externalId", "name", "value_rec", "category", "eventTs"}; // Skip 'email' field
 
     private FlatFileItemReader<RecordDTO> delegate;
     private boolean opened = false;
@@ -64,7 +64,7 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
                     RecordDTO record = new RecordDTO();
                     record.setExternalId(fieldSet.readString("externalId"));
                     record.setName(fieldSet.readString("name"));
-                    record.setValueRec(fieldSet.readBigDecimal("value"));
+                    record.setValueRec(fieldSet.readBigDecimal("value_rec"));
                     record.setCategory(fieldSet.readString("category"));
                     
                     // Convert ISO timestamp string to Timestamp
