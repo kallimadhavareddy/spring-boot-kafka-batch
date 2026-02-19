@@ -92,7 +92,7 @@ public class KafkaMessageListener {
                 }
 
                 try {
-                    idempotencyService.markProcessingStarted(message.getFileId());
+                    //idempotencyService.markProcessingStarted(message.getFileId());
 
                     JobParameters params = new JobParametersBuilder()
                             .addString("fileId", message.getFileId())
