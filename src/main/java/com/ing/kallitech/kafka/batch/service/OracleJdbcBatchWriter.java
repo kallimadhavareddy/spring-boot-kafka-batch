@@ -96,7 +96,6 @@ public class OracleJdbcBatchWriter implements ItemWriter<RecordDTO> {
             ps.setString(6, r.getRecordHash());
             ps.setString(7, r.getJobId());
             ps.setInt(8, r.getPartitionIndex());
-            ps.setString(9, r.getStatus());
             });
     }
 
