@@ -19,7 +19,7 @@ public class Record {
     private String name;
     
     @Column(name = "\"value\"")  // Quote to handle SQL reserved keyword
-    private BigDecimal value;
+    private BigDecimal valueRec;
     
     @Column(name = "category")
     private String category;
@@ -48,11 +48,11 @@ public class Record {
         this.id = id;
     }
 
-    public Record(Long id, String externalId, String name, BigDecimal value, String category, Instant eventTs, String recordHash, String jobId, int partitionIndex, String status) {
+    public Record(Long id, String externalId, String name, BigDecimal valueRec, String category, Instant eventTs, String recordHash, String jobId, int partitionIndex, String status) {
         this.id = id;
         this.externalId = externalId;
         this.name = name;
-        this.value = value;
+        this.valueRec = valueRec;
         this.category = category;
         this.eventTs = eventTs;
         this.recordHash = recordHash;
@@ -77,12 +77,12 @@ public class Record {
         this.name = name;
     }
 
-    public BigDecimal getValue() {
-        return value;
+    public BigDecimal getValueRec() {
+        return valueRec;
     }
 
-    public void setValue(BigDecimal value) {
-        this.value = value;
+    public void setValueRec(BigDecimal valueRec) {
+        this.valueRec = valueRec;
     }
 
     public String getCategory() {

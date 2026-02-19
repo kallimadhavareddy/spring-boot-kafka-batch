@@ -14,7 +14,7 @@ public class RecordDTO {
     // CSV source fields
     private String     externalId;   // Business key from CSV
     private String     name;
-    private BigDecimal value;
+    private BigDecimal valueRec;
     private String     category;
     private Timestamp eventTs;
 
@@ -29,10 +29,10 @@ public class RecordDTO {
     public RecordDTO() {}
 
     // All args constructor
-    public RecordDTO(String externalId, String name, BigDecimal value, String category, Timestamp eventTs, String recordHash, String jobId, int partitionIndex, String status) {
+    public RecordDTO(String externalId, String name, BigDecimal valueRec, String category, Timestamp eventTs, String recordHash, String jobId, int partitionIndex, String status) {
         this.externalId = externalId;
         this.name = name;
-        this.value = value;
+        this.valueRec = valueRec;
         this.category = category;
         this.eventTs = eventTs;
         this.recordHash = recordHash;
@@ -58,12 +58,13 @@ public class RecordDTO {
         this.name = name;
     }
 
-    public BigDecimal getValue() {
-        return value;
+
+    public BigDecimal getValueRec() {
+        return valueRec;
     }
 
-    public void setValue(BigDecimal value) {
-        this.value = value;
+    public void setValueRec(BigDecimal valueRec) {
+        this.valueRec = valueRec;
     }
 
     public String getCategory() {
@@ -119,7 +120,7 @@ public class RecordDTO {
         return "RecordDTO{" +
                 "externalId='" + externalId + '\'' +
                 ", name='" + name + '\'' +
-                ", value=" + value +
+                ", value=" + valueRec +
                 ", category='" + category + '\'' +
                 ", eventTs=" + eventTs +
                 ", recordHash='" + recordHash + '\'' +

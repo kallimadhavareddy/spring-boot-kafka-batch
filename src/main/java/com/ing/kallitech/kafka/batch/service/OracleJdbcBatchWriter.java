@@ -91,14 +91,14 @@ public class OracleJdbcBatchWriter implements ItemWriter<RecordDTO> {
         jdbcTemplate.batchUpdate(INSERT_SQL, items, items.size(), (ps, r) -> {
             ps.setString(1, r.getExternalId());
             ps.setString(2, r.getName());
-            ps.setBigDecimal(3, r.getValue());
+            ps.setBigDecimal(3, r.getValueRec());
             ps.setString(4, r.getCategory());
             ps.setTimestamp(5, r.getEventTs() != null ? r.getEventTs() : null);
             ps.setString(6, r.getRecordHash());
             ps.setString(7, r.getJobId());
             ps.setInt(8, r.getPartitionIndex());
             ps.setString(9, r.getStatus());
-        });
+            });
     }
 
     private void executeUpsertFallback(List<? extends RecordDTO> items) {
@@ -106,7 +106,7 @@ public class OracleJdbcBatchWriter implements ItemWriter<RecordDTO> {
         for (RecordDTO r : items) {
             try {
                 jdbcTemplate.update(INSERT_SQL,
-                    r.getExternalId(), r.getName(), r.getValue(), r.getCategory(),
+                    r.getExternalId(), r.getName(), r.getValueRec(), r.getCategory(),
                     r.getEventTs() != null ? r.getEventTs() : null,
                     r.getRecordHash(), r.getJobId(), r.getPartitionIndex(), r.getStatus());
             } catch (DuplicateKeyException dup) {
