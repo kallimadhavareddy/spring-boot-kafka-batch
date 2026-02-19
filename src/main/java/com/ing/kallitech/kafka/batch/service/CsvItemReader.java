@@ -47,7 +47,7 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
 
         var tokenizer = new DelimitedLineTokenizer(delimiter);
         tokenizer.setNames(FIELD_NAMES);
-        tokenizer.setStrict(false);
+        tokenizer.setStrict(false); // Allow missing columns and different field counts
 
         var fieldMapper = new BeanWrapperFieldSetMapper<RecordDTO>();
         fieldMapper.setTargetType(RecordDTO.class);
