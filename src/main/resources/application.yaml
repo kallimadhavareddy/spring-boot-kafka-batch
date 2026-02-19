@@ -64,7 +64,7 @@ spring:
 
   # Kafka Configuration
   kafka:
-    bootstrap-servers: 192.168.1.31:9092  # TODO: Update to correct reachable Kafka broker
+    bootstrap-servers: localhost:9092  # TODO: Update to correct reachable Kafka broker
 
     
     # Consumer Configuration
