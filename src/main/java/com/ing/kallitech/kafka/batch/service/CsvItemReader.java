@@ -31,6 +31,7 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
         {"externalId", "name", "value", "category", "eventTs"};
 
     private FlatFileItemReader<RecordDTO> delegate;
+    private boolean opened = false;
 
     @BeforeStep
     public void beforeStep(StepExecution stepExecution) {
@@ -53,8 +54,7 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
 
         // Create a new resource for each partition to avoid stream conflicts
         var resource = new FileSystemResource(filePath);
-        resource.getFile(); // Validate file exists early
-
+        
         delegate = new FlatFileItemReaderBuilder<RecordDTO>()
             .name("csvReader-" + partIdx)
             .resource(resource)
@@ -64,10 +64,38 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
             .lineTokenizer(tokenizer)
             .fieldSetMapper(fieldMapper)
             .build();
+            
+        opened = false;
     }
 
-    @Override public RecordDTO read() throws Exception { return delegate.read(); }
-    @Override public void open(ExecutionContext ctx)   { delegate.open(ctx); }
-    @Override public void update(ExecutionContext ctx) { delegate.update(ctx); }
-    @Override public void close()                      { delegate.close(); }
+    @Override 
+    public RecordDTO read() throws Exception { 
+        if (!opened) {
+            log.info("Opening CSV reader for partition");
+            delegate.open(new ExecutionContext());
+            opened = true;
+        }
+        return delegate.read(); 
+    }
+    
+    @Override 
+    public void open(ExecutionContext ctx) { 
+        // Don't open here - open on first read instead
+    }
+    
+    @Override 
+    public void update(ExecutionContext ctx) { 
+        if (opened) {
+            delegate.update(ctx); 
+        }
+    }
+    
+    @Override 
+    public void close() { 
+        if (opened) {
+            log.info("Closing CSV reader");
+            delegate.close(); 
+            opened = false;
+        }
+    }
 }
