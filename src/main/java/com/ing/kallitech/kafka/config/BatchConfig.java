@@ -11,6 +11,7 @@ import org.springframework.batch.core.step.tasklet.TaskletStep;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.partition.support.TaskExecutorPartitionHandler;
 import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
@@ -27,6 +28,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * FIXES applied vs original BatchConfig:
@@ -56,6 +60,8 @@ import java.util.concurrent.TimeUnit;
 @EnableBatchProcessing
 public class BatchConfig {
 
+    private static final Logger log = LoggerFactory.getLogger(BatchConfig.class);
+
     @Value("${batch.job.chunk-size:1000}")
     private int chunkSize;
 
@@ -77,14 +83,45 @@ public class BatchConfig {
     // ── Job ───────────────────────────────────────────────────────────────────
 
     @Bean
+    public Job testJob(JobRepository jobRepository, PlatformTransactionManager txManager) {
+        log.info("Creating testJob bean...");
+        try {
+            Step testStep = new StepBuilder("testStep", jobRepository)
+                .tasklet((contribution, chunkContext) -> {
+                    log.info("Test tasklet executed");
+                    return RepeatStatus.FINISHED;
+                }, txManager)
+                .build();
+                
+            Job job = new JobBuilder("testJob", jobRepository)
+                .incrementer(new RunIdIncrementer())
+                .start(testStep)
+                .build();
+            log.info("testJob created successfully: {}", job.getName());
+            return job;
+        } catch (Exception e) {
+            log.error("Failed to create testJob", e);
+            throw e;
+        }
+    }
+
+    @Bean
     public Job csvImportJob(JobRepository jobRepository,
                             Step partitionedStep,
                             JobCompletionListener listener) {
-        return new JobBuilder("csvImportJob", jobRepository)
-            .incrementer(new RunIdIncrementer())
-            .listener(listener)
-            .start(partitionedStep)
-            .build();
+        log.info("Creating csvImportJob bean...");
+        try {
+            Job job = new JobBuilder("csvImportJob", jobRepository)
+                .incrementer(new RunIdIncrementer())
+                .listener(listener)
+                .start(partitionedStep)
+                .build();
+            log.info("csvImportJob created successfully: {}", job.getName());
+            return job;
+        } catch (Exception e) {
+            log.error("Failed to create csvImportJob", e);
+            throw e;
+        }
     }
 
     @Bean

@@ -1,6 +1,9 @@
 package com.ing.kallitech.kafka;
 
 import com.ing.kallitech.kafka.batch.model.KafkaBatchMessage;
+import com.ing.kallitech.kafka.batch.service.KafkaMessageListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -11,6 +14,9 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api")
 public class ControllerApi {
+
+    private static final Logger log = LoggerFactory.getLogger(KafkaMessageListener.class);
+
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
@@ -41,6 +47,7 @@ public class ControllerApi {
                 "\",\"sourceSystem\":\"" + kafkaBatchMessage.getSourceSystem() + "\"}";
 
         try {
+            log.info(messageJson);
             kafkaTemplate.send("test-topic", messageJson);
         } catch (Exception e) {
             System.err.println("Failed to send message to Kafka: " + e.getMessage());
