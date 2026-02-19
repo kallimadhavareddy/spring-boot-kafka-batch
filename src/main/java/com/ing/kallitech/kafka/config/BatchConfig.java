@@ -87,8 +87,6 @@ public class BatchConfig {
             .build();
     }
 
-    // ── Partition Manager Step ─────────────────────────────────────────────────
-
     @Bean
     public Step partitionedStep(JobRepository jobRepository,
                                 CsvPartitioner csvPartitioner,
@@ -104,8 +102,6 @@ public class BatchConfig {
             .partitionHandler(handler)
             .build();
     }
-
-    // ── Worker Step ───────────────────────────────────────────────────────────
 
     @Bean
     public Step workerStep(JobRepository jobRepository,
@@ -133,8 +129,6 @@ public class BatchConfig {
             .listener((org.springframework.batch.core.SkipListener<RecordDTO, RecordDTO>) metricsListener)
             .build();
     }
-
-    // ── Thread Pool ───────────────────────────────────────────────────────────
 
     @Bean
     public TaskExecutor batchTaskExecutor() {

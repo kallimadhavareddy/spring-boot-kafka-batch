@@ -75,7 +75,7 @@ public class KafkaMessageListener {
                         message.getFileId(), message.getFilePath(),
                         message.getRecordCount(), partition, offset);
 
-                // ── Idempotency check ─────────────────────────────────────────────
+
                 if (idempotencyService.isAlreadyProcessed(message.getFileId())) {
                     log.warn("Duplicate skipped (already COMPLETED): fileId={}", message.getFileId());
                     Counter.builder("batch.trigger.duplicate").register(meterRegistry).increment();
@@ -85,8 +85,7 @@ public class KafkaMessageListener {
 
                 // ── Backpressure ──────────────────────────────────────────────────
                 if (!concurrencyGate.tryAcquire()) {
-                    log.warn("Pod at max concurrency — not acking (Kafka will redeliver): fileId={}",
-                            message.getFileId());
+                    log.warn("Pod at max concurrency — not acking (Kafka will redeliver): fileId={}", message.getFileId());
                     Counter.builder("batch.trigger.backpressure").register(meterRegistry).increment();
                     // Do NOT ack — Kafka will redeliver to this or another pod
                     throw new RuntimeException("Pod at max concurrency for fileId: " + message.getFileId());

@@ -12,21 +12,6 @@ import org.springframework.util.StringUtils;
 
 import java.math.RoundingMode;
 
-/**
- * FIXES applied vs original CsvItemProcessor:
- *
- * 1. WRONG IMPORT: Was org.springframework.batch.infrastructure.item.ItemProcessor
- *    (does not exist). Correct: org.springframework.batch.item.ItemProcessor
- *
- * 2. SILENT NULL RETURN: Returning null silently drops the record — no visibility.
- *    Fixed: throw RecordValidationException (counted against skipLimit, logged).
- *
- * 3. NO ENRICHMENT: Missing recordHash (idempotency key), jobId, partitionIndex.
- *    Fixed: SHA-256 hash of business key computed here; job metadata injected.
- *
- * 4. NO VALUE VALIDATION: BigDecimal scale not checked — could cause ORA-01438
- *    (value larger than specified precision) on Oracle insert.
- */
 @Component
 public class CsvItemProcessor implements ItemProcessor<RecordDTO, RecordDTO> {
 
@@ -44,7 +29,6 @@ public class CsvItemProcessor implements ItemProcessor<RecordDTO, RecordDTO> {
     @Override
     public RecordDTO process(RecordDTO item) throws RecordValidationException {
 
-        // ── Validation ───────────────────────────────────────────────────────
         if (!StringUtils.hasText(item.getName())) {
             throw new RecordValidationException("name is blank", item);
         }
@@ -55,10 +39,8 @@ public class CsvItemProcessor implements ItemProcessor<RecordDTO, RecordDTO> {
             item.setValue(item.getValue().setScale(4, RoundingMode.HALF_UP));
         }
         if (!StringUtils.hasText(item.getCategory())) {
-            item.setCategory("UNKNOWN");
         }
 
-        // ── Enrichment ───────────────────────────────────────────────────────
         item.setRecordHash(computeHash(item));
         item.setJobId(jobId);
         item.setPartitionIndex(partitionIndex);
@@ -66,10 +48,7 @@ public class CsvItemProcessor implements ItemProcessor<RecordDTO, RecordDTO> {
         return item;
     }
 
-    /**
-     * Deterministic SHA-256 of business key fields.
-     * Same input always produces same hash → DB UNIQUE constraint = idempotency.
-     */
+
     private String computeHash(RecordDTO rec) {
         String key = String.join("|",
             nullSafe(rec.getExternalId()),

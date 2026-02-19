@@ -10,7 +10,6 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.item.file.FlatFileParseException;
 import org.springframework.stereotype.Component;
 
-/** NEW: Per-chunk and skip-event metrics + logging. */
 @Component
 public class ChunkMetricsListener
         implements ChunkListener, SkipListener<RecordDTO, RecordDTO> {

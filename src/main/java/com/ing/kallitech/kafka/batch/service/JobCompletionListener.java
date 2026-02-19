@@ -51,15 +51,12 @@ public class JobCompletionListener implements JobExecutionListener {
         if (status == BatchStatus.COMPLETED) {
             idempotencyService.markCompleted(fileId, written);
             meterRegistry.counter("batch.job.completed").increment();
-            log.info("Job COMPLETED: fileId={} durationMs={} written={} skipped={}",
-                fileId, duration.toMillis(), written, skipped);
+            log.info("Job COMPLETED: fileId={} durationMs={} written={} skipped={}", fileId, duration.toMillis(), written, skipped);
         } else {
             String desc = jobExecution.getExitStatus().getExitDescription();
-            idempotencyService.markFailed(fileId,
-                desc != null && desc.length() > 2000 ? desc.substring(0, 2000) : desc);
+            idempotencyService.markFailed(fileId, desc != null && desc.length() > 2000 ? desc.substring(0, 2000) : desc);
             meterRegistry.counter("batch.job.failed").increment();
-            log.error("Job FAILED: fileId={} durationMs={} written={} skipped={} desc={}",
-                fileId, duration.toMillis(), written, skipped, desc);
+            log.error("Job FAILED: fileId={} durationMs={} written={} skipped={} desc={}", fileId, duration.toMillis(), written, skipped, desc);
         }
 
         // Always release the concurrency slot
