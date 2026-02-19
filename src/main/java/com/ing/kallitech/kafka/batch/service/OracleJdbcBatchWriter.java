@@ -93,7 +93,7 @@ public class OracleJdbcBatchWriter implements ItemWriter<RecordDTO> {
             ps.setString(2, r.getName());
             ps.setBigDecimal(3, r.getValue());
             ps.setString(4, r.getCategory());
-            ps.setTimestamp(5, r.getEventTs() != null ? Timestamp.from(r.getEventTs()) : null);
+            ps.setTimestamp(5, r.getEventTs() != null ? r.getEventTs() : null);
             ps.setString(6, r.getRecordHash());
             ps.setString(7, r.getJobId());
             ps.setInt(8, r.getPartitionIndex());
@@ -107,7 +107,7 @@ public class OracleJdbcBatchWriter implements ItemWriter<RecordDTO> {
             try {
                 jdbcTemplate.update(INSERT_SQL,
                     r.getExternalId(), r.getName(), r.getValue(), r.getCategory(),
-                    r.getEventTs() != null ? Timestamp.from(r.getEventTs()) : null,
+                    r.getEventTs() != null ? r.getEventTs() : null,
                     r.getRecordHash(), r.getJobId(), r.getPartitionIndex(), r.getStatus());
             } catch (DuplicateKeyException dup) {
                 log.debug("Skipping duplicate: record_hash={}", r.getRecordHash());

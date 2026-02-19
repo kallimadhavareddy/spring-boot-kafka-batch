@@ -1,7 +1,8 @@
 package com.ing.kallitech.kafka.batch.model;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 
 /**
  * FIX: Added Lombok, externalId (business key), category, eventTs, recordHash,
@@ -15,7 +16,7 @@ public class RecordDTO {
     private String     name;
     private BigDecimal value;
     private String     category;
-    private Instant    eventTs;
+    private Timestamp eventTs;
 
     // Enriched by processor
     private String  recordHash;      // SHA-256(externalId|category|eventTs) — idempotency key
@@ -28,7 +29,7 @@ public class RecordDTO {
     public RecordDTO() {}
 
     // All args constructor
-    public RecordDTO(String externalId, String name, BigDecimal value, String category, Instant eventTs, String recordHash, String jobId, int partitionIndex, String status) {
+    public RecordDTO(String externalId, String name, BigDecimal value, String category, Timestamp eventTs, String recordHash, String jobId, int partitionIndex, String status) {
         this.externalId = externalId;
         this.name = name;
         this.value = value;
@@ -73,11 +74,11 @@ public class RecordDTO {
         this.category = category;
     }
 
-    public Instant getEventTs() {
+    public Timestamp getEventTs() {
         return eventTs;
     }
 
-    public void setEventTs(Instant eventTs) {
+    public void setEventTs(Timestamp eventTs) {
         this.eventTs = eventTs;
     }
 
