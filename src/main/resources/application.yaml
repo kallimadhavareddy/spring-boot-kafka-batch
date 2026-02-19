@@ -18,8 +18,12 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password: 
-    initialization-mode: always
-    sql-script-encoding: UTF-8
+    
+  # SQL Initialization
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
     
     # H2 Console settings
     h2:
