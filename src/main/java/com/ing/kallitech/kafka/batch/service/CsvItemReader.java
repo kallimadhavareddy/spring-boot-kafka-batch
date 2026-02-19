@@ -28,7 +28,7 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
     private static final Logger log = LoggerFactory.getLogger(CsvItemReader.class);
 
     private static final String[] FIELD_NAMES =
-        {"externalId", "name", "email", "value", "category", "eventTs"};
+        {"externalId", "name", "value", "category", "eventTs"}; // Skip 'email' field
 
     private FlatFileItemReader<RecordDTO> delegate;
     private boolean opened = false;
@@ -78,7 +78,13 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
             delegate.open(new ExecutionContext());
             opened = true;
         }
-        return delegate.read(); 
+        
+        RecordDTO record = delegate.read();
+        if (record != null) {
+            log.debug("Read record: externalId={}, name={}, value={}", 
+                record.getExternalId(), record.getName(), record.getValue());
+        }
+        return record;
     }
     
     @Override 

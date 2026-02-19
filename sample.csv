@@ -1,7 +1,7 @@
-externalId,name,email,value,category,eventTs
-1,John Doe,john@example.com,100.50,Electronics,2026-02-18T11:45:00Z
-2,Jane Smith,jane@example.com,200.75,Books,2026-02-18T11:45:00Z
-3,Bob Johnson,bob@example.com,150.25,Clothing,2026-02-18T11:45:00Z
-4,Alice Brown,alice@example.com,300.00,Electronics,2026-02-18T11:45:00Z
-5,Charlie Wilson,charlie@example.com,75.50,Books,2026-02-18T11:45:00Z
-6,MNO345,mno@example.com,200.00,Electronics,2026-02-18T11:45:00Z
+externalId,name,value,category,eventTs
+1,John Doe,100.50,Electronics,2026-02-18T11:45:00Z
+2,Jane Smith,200.75,Books,2026-02-18T11:45:00Z
+3,Bob Johnson,150.25,Clothing,2026-02-18T11:45:00Z
+4,Alice Brown,300.00,Electronics,2026-02-18T11:45:00Z
+5,Charlie Wilson,75.50,Books,2026-02-18T11:45:00Z
+6,MNO345,200.00,Electronics,2026-02-18T11:45:00Z
