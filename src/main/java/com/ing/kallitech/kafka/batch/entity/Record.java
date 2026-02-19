@@ -12,16 +12,32 @@ public class Record {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String     externalId;   // Business key from CSV
-    private String     name;
+    @Column(name = "external_id")
+    private String externalId;   // Business key from CSV
+    
+    @Column(name = "name", nullable = false)
+    private String name;
+    
+    @Column(name = "\"value\"")  // Quote to handle SQL reserved keyword
     private BigDecimal value;
-    private String     category;
+    
+    @Column(name = "category")
+    private String category;
+    
+    @Column(name = "event_ts")
     private Instant eventTs;
 
     // Enriched by processor
-    private String  recordHash;      // SHA-256(externalId|category|eventTs) — idempotency key
-    private String  jobId;
-    private int     partitionIndex;
+    @Column(name = "record_hash")
+    private String recordHash;      // SHA-256(externalId|category|eventTs) — idempotency key
+    
+    @Column(name = "job_id")
+    private String jobId;
+    
+    @Column(name = "partition_idx")
+    private int partitionIndex;
+    
+    @Column(name = "status")
     private String status = "LOADED";
 
     public Long getId() {
