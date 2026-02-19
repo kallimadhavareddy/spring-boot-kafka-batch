@@ -51,12 +51,16 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
         var fieldMapper = new BeanWrapperFieldSetMapper<RecordDTO>();
         fieldMapper.setTargetType(RecordDTO.class);
 
+        // Create a new resource for each partition to avoid stream conflicts
+        var resource = new FileSystemResource(filePath);
+        resource.getFile(); // Validate file exists early
+
         delegate = new FlatFileItemReaderBuilder<RecordDTO>()
             .name("csvReader-" + partIdx)
-            .resource(new FileSystemResource(filePath))
+            .resource(resource)
             .linesToSkip((int) startLine - 1)
             .maxItemCount((int) maxItems)
-            .saveState(true)   // CRITICAL: enables restart from last checkpoint
+            .saveState(false)  // Disable save state for partitioned readers
             .lineTokenizer(tokenizer)
             .fieldSetMapper(fieldMapper)
             .build();
