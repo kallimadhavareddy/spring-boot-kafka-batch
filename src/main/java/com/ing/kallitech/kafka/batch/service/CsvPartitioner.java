@@ -82,7 +82,7 @@ public class CsvPartitioner implements Partitioner {
     private StepExecution getCurrentStepExecution() {
         try {
             // Spring Batch stores StepExecution in a thread-local during step execution
-            return org.springframework.batch.core.scope.context.StepContext.getStepExecution();
+            return org.springframework.batch.core.scope.context.StepSynchronizationManager.getContext().getStepExecution();
         } catch (Exception e) {
             log.error("Failed to get StepExecution from thread context", e);
             return null;
