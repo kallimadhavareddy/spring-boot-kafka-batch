@@ -8,11 +8,15 @@ import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.item.*;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
-import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.item.file.mapping.FieldSetMapper;
+import org.springframework.batch.item.file.transform.FieldSet;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Component;
+
+import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  * FIX: Original BatchConfig.csvItemReader(null) passed null as filePath.
@@ -52,8 +56,36 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
         
         log.info("Tokenizer configured with fields: {}", String.join(",", FIELD_NAMES));
 
-        var fieldMapper = new BeanWrapperFieldSetMapper<RecordDTO>();
-        fieldMapper.setTargetType(RecordDTO.class);
+        // Create a custom field mapper for timestamp conversion
+        var fieldMapper = new FieldSetMapper<RecordDTO>() {
+            @Override
+            public RecordDTO mapFieldSet(FieldSet fieldSet) {
+                try {
+                    RecordDTO record = new RecordDTO();
+                    record.setExternalId(fieldSet.readString("externalId"));
+                    record.setName(fieldSet.readString("name"));
+                    record.setValue(fieldSet.readBigDecimal("value"));
+                    record.setCategory(fieldSet.readString("category"));
+                    
+                    // Convert ISO timestamp string to Timestamp
+                    String eventTsStr = fieldSet.readString("eventTs");
+                    if (eventTsStr != null && !eventTsStr.isEmpty()) {
+                        try {
+                            Instant instant = Instant.parse(eventTsStr);
+                            record.setEventTs(Timestamp.from(instant));
+                        } catch (Exception e) {
+                            log.warn("Failed to parse timestamp: {}", eventTsStr);
+                            record.setEventTs(null);
+                        }
+                    }
+                    
+                    return record;
+                } catch (Exception e) {
+                    log.error("Error mapping field set to RecordDTO", e);
+                    return null;
+                }
+            }
+        };
 
         // Create a custom line mapper for better error handling
         var lineMapper = new DefaultLineMapper<RecordDTO>();
