@@ -52,12 +52,10 @@ public class OracleJdbcBatchWriter implements ItemWriter<RecordDTO> {
 
     // FIX: APPEND_VALUES (not APPEND) for single-row inserts
     // H2 silently ignores the Oracle hint — works in dev without changes
-    private static final String INSERT_SQL = """
-        INSERT INTO batch_records
-            (external_id, name, value, category, event_ts,
-             record_hash, job_id, partition_idx, created_at, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
-        """;
+    private static final String INSERT_SQL = "INSERT INTO batch_records " +
+            "(external_id, name, value, category, event_ts, " +
+            "record_hash, job_id, partition_idx, created_at, status) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)";
 
     @Override
     @Transactional
