@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -27,9 +28,9 @@ public class JobCompletionListener implements JobExecutionListener {
 
     private final IdempotencyService idempotencyService;
     private final MeterRegistry meterRegistry;
-    private final Optional<KafkaMessageListener> kafkaMessageListener;
+    private final ObjectProvider<KafkaMessageListener> kafkaMessageListener;
 
-    public JobCompletionListener(IdempotencyService idempotencyService, MeterRegistry meterRegistry, @Lazy Optional<KafkaMessageListener> kafkaMessageListener) {
+    public JobCompletionListener(IdempotencyService idempotencyService, MeterRegistry meterRegistry, ObjectProvider<KafkaMessageListener> kafkaMessageListener) {
         this.idempotencyService = idempotencyService;
         this.meterRegistry = meterRegistry;
         this.kafkaMessageListener = kafkaMessageListener;
@@ -61,6 +62,6 @@ public class JobCompletionListener implements JobExecutionListener {
         }
 
         // Always release the concurrency slot
-        kafkaMessageListener.ifPresent(KafkaMessageListener::releaseConcurrencySlot);
+        kafkaMessageListener.ifAvailable(KafkaMessageListener::releaseConcurrencySlot);
     }
 }
