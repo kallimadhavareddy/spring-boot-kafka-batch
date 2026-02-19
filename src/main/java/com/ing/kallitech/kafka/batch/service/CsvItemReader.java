@@ -28,7 +28,7 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
     private static final Logger log = LoggerFactory.getLogger(CsvItemReader.class);
 
     private static final String[] FIELD_NAMES =
-        {"externalId", "name", "value", "category", "eventTs"};
+        {"externalId", "name", "email", "value", "category", "eventTs"};
 
     private FlatFileItemReader<RecordDTO> delegate;
     private boolean opened = false;
