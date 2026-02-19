@@ -32,11 +32,11 @@ public class CsvItemProcessor implements ItemProcessor<RecordDTO, RecordDTO> {
         if (!StringUtils.hasText(item.getName())) {
             throw new RecordValidationException("name is blank", item);
         }
-        if (item.getValue() == null) {
+        if (item.getValueRec() == null) {
             throw new RecordValidationException("value is null", item);
         }
-        if (item.getValue().scale() > 4) {
-            item.setValue(item.getValue().setScale(4, RoundingMode.HALF_UP));
+        if (item.getValueRec().scale() > 4) {
+            item.setValueRec(item.getValueRec().setScale(4, RoundingMode.HALF_UP));
         }
         if (!StringUtils.hasText(item.getCategory())) {
         }

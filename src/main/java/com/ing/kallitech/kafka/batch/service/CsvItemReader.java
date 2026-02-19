@@ -64,7 +64,7 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
                     RecordDTO record = new RecordDTO();
                     record.setExternalId(fieldSet.readString("externalId"));
                     record.setName(fieldSet.readString("name"));
-                    record.setValue(fieldSet.readBigDecimal("value"));
+                    record.setValueRec(fieldSet.readBigDecimal("value"));
                     record.setCategory(fieldSet.readString("category"));
                     
                     // Convert ISO timestamp string to Timestamp
@@ -121,7 +121,7 @@ public class CsvItemReader implements ItemStreamReader<RecordDTO> {
         RecordDTO record = delegate.read();
         if (record != null) {
             log.info("Successfully read record: externalId={}, name={}, value={}", 
-                record.getExternalId(), record.getName(), record.getValue());
+                record.getExternalId(), record.getName(), record.getValueRec());
         } else {
             log.info("No more records to read");
         }
