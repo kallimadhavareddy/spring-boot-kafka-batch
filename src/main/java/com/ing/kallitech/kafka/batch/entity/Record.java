@@ -8,6 +8,9 @@ import java.time.Instant;
 @Entity
 @Table(name="batch_records")
 public class Record {
+    public Record() {
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,7 +41,7 @@ public class Record {
     private int partitionIndex;
     
     @Column(name = "status")
-    private String status = "LOADED";
+    private String status;
 
     public Long getId() {
         return id;
