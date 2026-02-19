@@ -88,6 +88,8 @@ public class OracleJdbcBatchWriter implements ItemWriter<RecordDTO> {
     }
 
     private void executeBatch(List<? extends RecordDTO> items) {
+        log.info("OracleJdbcBatchWriter.executeBatch() called with {} items", items.size());
+        log.info("OracleJdbcBatchWriter.executeBatch() starting{}",items);
         jdbcTemplate.batchUpdate(INSERT_SQL, items, items.size(), (ps, r) -> {
             ps.setString(1, r.getExternalId());
             ps.setString(2, r.getName());
